@@ -1,5 +1,7 @@
 import discord
 import requests as r
+import os
+import json
 from bs4 import BeautifulSoup as soup
 
 client = discord.Client()
@@ -14,6 +16,11 @@ def get_recipe(item):
     else:
         print("Successful connection to {0}".format(url))
         return "SUCCESS"
+
+# Open token from file
+def get_bot_token():
+    with open('token.txt') as f:
+        return json.load(f)
 
 @client.event
 async def on_ready():
@@ -33,5 +40,5 @@ async def on_message(message):
         status = get_recipe(item)
         await message.channel.send(status)
 
-
-client.run('ODAwMzg2MzI2NTE5MjE4MTg3.YARX2g.CfH6gyddS9-62i3mjZ3lZxz0IF4')
+## Start the bot ##
+client.run(get_bot_token())
