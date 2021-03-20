@@ -5,7 +5,7 @@ import json
 import sys
 from bs4 import BeautifulSoup
 
-client = discord.Client()
+from discord.ext import commands
 
 # Scrape requested recipe from Minecraft website
 def get_recipe(item):
@@ -34,47 +34,88 @@ def get_recipe(item):
     
     return msg_list
 
-# Open token from file
-def get_bot_token():
-    with open('token.txt') as f:
-        token = json.load(f)
+# Retrieve credentials for bot token and allowed admin userID
+def get_bot_credentials(fname):
+    if not os.path.exists(fname):
+        print(fname + " does not exist")
+        return None
+    else:
+        try:    
+            with open(fname) as f:
+                credentials = json.load(f)
+                return credentials
+        except Exception as ex:
+            print("Error occurred in opening credentials file: " + ex)
+            return None
 
-    return token
+# Shutdown the bot
+def kill_process():
+    sys.exit(0)
 
-@client.event
-async def on_ready():
-    print("=== {0.user} has been initiated ===".format(client))
+####################################################################
 
-@client.event
-async def on_message(message):
-    if message.author == client.user:
-        return
+def main():
+    client = commands.Bot(command_prefix=">")
+    credentials = get_bot_credentials("credentials.txt")
 
-    if message.content == '>speak':
-        await message.channel.send('Hello, ' + message.author.display_name + ', this is Minecraft Bot!')
+    # If bad credentials, shutdown the bot
+    if credentials is None:
+        kill_process()
+    # Else, register commands/events and start the bot
+    else:
+        token = credentials['token']
+        admin_userID = credentials['admin_userID']
 
-    if message.content == '>kill':
-        await message.channel.send('<MinecraftBot has disconnected>')
-        os._exit(0)
+        # DISCORD EVENTS/COMMANDS #
+        @client.command()
+        async def shutdown(ctx):
+            if int(ctx.author.id) == int(admin_userID):
+                await ctx.send('MinecraftBot has been terminated')
+                kill_process()
 
-    if message.content.startswith('>recipe '):
-        item = message.content[8:]
-        print('Requested item: {0}'.format(item))
-        msg_list = get_recipe(item)
+        @client.command()
+        async def speak(ctx):
+            await ctx.send('Hello, ' + ctx.author.display_name + ', this is Minecraft Bot!')
 
-        # Catch error
-        if msg_list[0] == 'ERROR':
-            await message.channel.send(msg_list[1])
-            return
+        @client.command()
+        async def recipe(ctx):
+            item = ctx.message.content[8:]
+            print('Requested item: {0}'.format(item))
+            msg_list = get_recipe(item)
 
-        # Compile output into a table format
-        title = '**' + item + '**'
-        e = discord.Embed(title=title, color=0x03f8fc)
-        e.add_field(name='----', value='{0}\n{1}\n{2}'.format(msg_list[0], msg_list[3], msg_list[6]))
-        e.add_field(name='----', value='{0}\n{1}\n{2}'.format(msg_list[1], msg_list[4], msg_list[7]))
-        e.add_field(name='----', value='{0}\n{1}\n{2}'.format(msg_list[2], msg_list[5], msg_list[8]))
-        await message.channel.send(embed=e)
+            # Catch error
+            if msg_list[0] == 'ERROR':
+                await ctx.send(msg_list[1])
+                return
 
-## Start the bot ##
-token = get_bot_token()['token']
-client.run(token)
+            # Compile output into a table format
+            title = '**' + item + '**'
+            e = discord.Embed(title=title, color=0x03f8fc)
+            e.add_field(name='----', value='{0}\n{1}\n{2}'.format(msg_list[0], msg_list[3], msg_list[6]))
+            e.add_field(name='----', value='{0}\n{1}\n{2}'.format(msg_list[1], msg_list[4], msg_list[7]))
+            e.add_field(name='----', value='{0}\n{1}\n{2}'.format(msg_list[2], msg_list[5], msg_list[8]))
+            await ctx.send(embed=e)
+
+        @client.event
+        async def on_message(msg):
+            if msg.author == client.user:
+                return
+            await client.process_commands(msg)
+
+        @client.event
+        async def on_ready():
+            print("=== {0.user} has been initiated ===".format(client))
+            
+        
+        # Start the bot
+        client.run(token)
+    
+if __name__ == "__main__":
+    main()
+
+####################################################################
+
+
+
+
+
