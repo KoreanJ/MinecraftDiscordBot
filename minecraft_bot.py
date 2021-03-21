@@ -3,6 +3,7 @@ import requests as r
 import os
 import json
 import sys
+import psutil as ps
 from bs4 import BeautifulSoup
 
 from discord.ext import commands
@@ -48,6 +49,10 @@ def get_bot_credentials(fname):
             print("Error occurred in opening credentials file: " + ex)
             return None
 
+# Report system status
+def system_status():
+    return 
+
 # Shutdown the bot
 def kill_process():
     sys.exit(0)
@@ -71,7 +76,17 @@ def main():
         async def shutdown(ctx):
             if int(ctx.author.id) == int(admin_userID):
                 await ctx.send('MinecraftBot has been terminated')
-                kill_process()
+                await client.logout()
+
+        @client.command()
+        async def status(ctx):
+            if sys.platform == 'linux' and int(ctx.author.id) == int(admin_userID):
+                curr_temp = ps.sensors_temperatures(fahrenheit=True)['cpu_thermal'][0][1]
+                users = ps.users()
+                cpu_load = [(x / ps.cpu_count()) * 100 for x in ps.getloadavg()]
+                await ctx.send('Current Temp: ' + curr_temp + '°F')
+                await ctx.send('Logged in User(s): ' + users)
+                await ctx.send('[1, 5, 15] min CPU avg load: ' + cpu_load)
 
         @client.command()
         async def speak(ctx):
