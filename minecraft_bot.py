@@ -85,8 +85,8 @@ def main():
                 users = ps.users()
                 cpu_load = [(x / ps.cpu_count()) * 100 for x in ps.getloadavg()]
                 await ctx.send('Current Temp: ' + str(curr_temp) + '°F')
-                await ctx.send('Logged in User(s): ' + users)
-                await ctx.send('[1, 5, 15] min CPU avg load: ' + cpu_load)
+                await ctx.send('Logged in User(s): ' + str(users))
+                await ctx.send('[1, 5, 15] min CPU avg load: ' + str(cpu_load))
 
         @client.command()
         async def speak(ctx):
