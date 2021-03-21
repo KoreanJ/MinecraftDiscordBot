@@ -94,22 +94,27 @@ def main():
 
         @client.command()
         async def recipe(ctx):
-            item = ctx.message.content[8:]
-            print('Requested item: {0}'.format(item))
-            msg_list = get_recipe(item)
+            try: 
+                item = ctx.message.content[8:]
+                print('Requested item: {0}'.format(item))
+                msg_list = get_recipe(item)
 
-            # Catch error
-            if msg_list[0] == 'ERROR':
-                await ctx.send(msg_list[1])
+                # Catch error
+                if msg_list[0] == 'ERROR':
+                    await ctx.send(msg_list[1])
+                    return
+
+                # Compile output into a table format
+                title = '**' + item + '**'
+                e = discord.Embed(title=title, color=0x03f8fc)
+                e.add_field(name='----', value='{0}\n{1}\n{2}'.format(msg_list[0], msg_list[3], msg_list[6]))
+                e.add_field(name='----', value='{0}\n{1}\n{2}'.format(msg_list[1], msg_list[4], msg_list[7]))
+                e.add_field(name='----', value='{0}\n{1}\n{2}'.format(msg_list[2], msg_list[5], msg_list[8]))
+                await ctx.send(embed=e)
+            except Exception as ex:
+                await ctx.send('Unable to get recipe for the requested item: ' + ctx.message.content)
+                print('Exception occurred: ' + str(ex))
                 return
-
-            # Compile output into a table format
-            title = '**' + item + '**'
-            e = discord.Embed(title=title, color=0x03f8fc)
-            e.add_field(name='----', value='{0}\n{1}\n{2}'.format(msg_list[0], msg_list[3], msg_list[6]))
-            e.add_field(name='----', value='{0}\n{1}\n{2}'.format(msg_list[1], msg_list[4], msg_list[7]))
-            e.add_field(name='----', value='{0}\n{1}\n{2}'.format(msg_list[2], msg_list[5], msg_list[8]))
-            await ctx.send(embed=e)
 
         @client.event
         async def on_message(msg):
@@ -123,7 +128,7 @@ def main():
             
         
         # Start the bot
-        client.run(token)
+        client.loop.run_until_complete(client.start(token))
     
 if __name__ == "__main__":
     main()
