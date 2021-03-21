@@ -84,7 +84,7 @@ def main():
                 curr_temp = ps.sensors_temperatures(fahrenheit=True)['cpu_thermal'][0][1]
                 users = ps.users()
                 cpu_load = [(x / ps.cpu_count()) * 100 for x in ps.getloadavg()]
-                await ctx.send('Current Temp: ' + curr_temp + '°F')
+                await ctx.send('Current Temp: ' + str(curr_temp) + '°F')
                 await ctx.send('Logged in User(s): ' + users)
                 await ctx.send('[1, 5, 15] min CPU avg load: ' + cpu_load)
 
