@@ -86,19 +86,23 @@ def main():
                 await ctx.send('MinecraftBot has been terminated')
                 await client.logout()
             else:
-                log_event('shutdown()', '{0} attempted to shutdown the bot, but failed'.format(ctx), 'FAILURE')
+                log_event('shutdown()', '{0} attempted to shutdown the bot, but failed due to insufficient permissions'.format(ctx.author), 'FAILURE')
+                ctx.send('{0}, you do not have permission to use this command'.format(ctx.author))
 
 
         @client.command()
         async def status(ctx):
             if sys.platform == 'linux' and int(ctx.author.id) == int(admin_userID):
-                log_event('status()', '{0} successfully shutdown the bot'.format(ctx.author), 'SUCCESS')
+                log_event('status()', '{0} successfully got the bot status'.format(ctx.author), 'SUCCESS')
                 curr_temp = ps.sensors_temperatures(fahrenheit=True)['cpu_thermal'][0][1]
                 users = [x[0] for x in ps.users()]
                 cpu_load = ps.cpu_percent(percpu=True)
                 await ctx.send('Current Temp: ' + str(round(curr_temp,  1)) + ' °F')
                 await ctx.send('Logged in User(s): ' + str(users))
                 await ctx.send('CPU Load (%)' + str(cpu_load))
+            else:
+                log_event('status()', '{0} attempted to get bot status, but failed due to insufficient permissions'.format(ctx.author), 'FAILURE')
+                await ctx.send('{0}, you do not have permission to use this command'.format(ctx.author))
 
         @client.command()
         async def speak(ctx):
