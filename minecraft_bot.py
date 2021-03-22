@@ -92,6 +92,7 @@ def main():
         @client.command()
         async def status(ctx):
             if sys.platform == 'linux' and int(ctx.author.id) == int(admin_userID):
+                log_event('status()', '{0} successfully shutdown the bot'.format(ctx.author), 'SUCCESS')
                 curr_temp = ps.sensors_temperatures(fahrenheit=True)['cpu_thermal'][0][1]
                 users = [x[0] for x in ps.users()]
                 cpu_load = ps.cpu_percent(percpu=True)
