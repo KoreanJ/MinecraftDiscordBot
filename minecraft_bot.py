@@ -5,15 +5,14 @@ import json
 import sys
 import psutil as ps
 from bs4 import BeautifulSoup
-
 from discord.ext import commands
+from datetime import datetime
 
 # Scrape requested recipe from Minecraft website
 def get_recipe(item):
     url = 'https://minecraft.gamepedia.com/' + item.lower()
     req = r.get(url)
     if req.ok == False:
-        print("Error connecting to {0}".format(url))
         return ['ERROR', 'A recipe for "' + item + '" was not found on ' + url]
     else:
         # On load, scrape items used in recipe (first seen, not all of the options)
@@ -53,6 +52,14 @@ def get_bot_credentials(fname):
 def system_status():
     return 
 
+# Log events
+def log_event(method_name, event, status):
+    f_name = 'log.txt'
+    event_time = datetime.now().strftime('%m/%d/%y %H:%M:%S')
+    with open(f_name, 'a+') as f:
+        f.write('[{0}, {1}, {2}, {3}]\n'.format(str(event_time), method_name, event, status))
+    return
+
 # Shutdown the bot
 def kill_process():
     sys.exit(0)
@@ -75,32 +82,37 @@ def main():
         @client.command()
         async def shutdown(ctx):
             if int(ctx.author.id) == int(admin_userID):
+                log_event('shutdown()', '{0} successfully shutdown the bot'.format(ctx.author), 'SUCCESS')
                 await ctx.send('MinecraftBot has been terminated')
                 await client.logout()
+            else:
+                log_event('shutdown()', '{0} attempted to shutdown the bot, but failed'.format(ctx), 'FAILURE')
+
 
         @client.command()
         async def status(ctx):
             if sys.platform == 'linux' and int(ctx.author.id) == int(admin_userID):
                 curr_temp = ps.sensors_temperatures(fahrenheit=True)['cpu_thermal'][0][1]
-                users = ps.users()
-                cpu_load = [(x / ps.cpu_count()) * 100 for x in ps.getloadavg()]
-                await ctx.send('Current Temp: ' + str(curr_temp) + '°F')
+                users = [x[1] for x in ps.users()]
+                cpu_load = ps.cpu_percent(interval=1, percpu=True)
+                await ctx.send('Current Temp: ' + str(round(curr_temp,  1)) + ' °F')
                 await ctx.send('Logged in User(s): ' + str(users))
-                await ctx.send('[1, 5, 15] min CPU avg load: ' + str(cpu_load))
+                await ctx.send('CPU Load (%)' + str(cpu_load))
 
         @client.command()
         async def speak(ctx):
             await ctx.send('Hello, ' + ctx.author.display_name + ', this is Minecraft Bot!')
 
         @client.command()
-        async def recipe(ctx):
+        async def recipe(ctx, arg):
             try: 
-                item = ctx.message.content[8:]
-                print('Requested item: {0}'.format(item))
+                item = arg
                 msg_list = get_recipe(item)
+                log_event('recipe()', '{0} requested recipe for "{1}"'.format(ctx.author, item), 'SUCCESS')
 
                 # Catch error
                 if msg_list[0] == 'ERROR':
+                    log_event('recipe()', '{0}: Unable to retrieve recipe for "{1}"'.format(ctx.author, item), 'FAILURE')
                     await ctx.send(msg_list[1])
                     return
 
@@ -112,8 +124,8 @@ def main():
                 e.add_field(name='----', value='{0}\n{1}\n{2}'.format(msg_list[2], msg_list[5], msg_list[8]))
                 await ctx.send(embed=e)
             except Exception as ex:
-                await ctx.send('Unable to get recipe for the requested item: ' + ctx.message.content)
-                print('Exception occurred: ' + str(ex))
+                log_event('recipe()', '{0}: Exception occurred while requesting "{1}": {2}'.format(ctx.author, item, ex), 'FAILURE')
+                await ctx.send('Unable to get recipe for the requested item "{0}": '.format(item))
                 return
 
         @client.event
@@ -124,7 +136,7 @@ def main():
 
         @client.event
         async def on_ready():
-            print("=== {0.user} has been initiated ===".format(client))
+            log_event('main()', '{0} has successfully been initialized'.format(client.user), 'SUCCESS')
             
         
         # Start the bot
