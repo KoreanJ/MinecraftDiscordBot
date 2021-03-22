@@ -87,7 +87,7 @@ def main():
                 await client.logout()
             else:
                 log_event('shutdown()', '{0} attempted to shutdown the bot, but failed due to insufficient permissions'.format(ctx.author), 'FAILURE')
-                ctx.send('{0}, you do not have permission to use this command'.format(ctx.author))
+                await ctx.send('{0}, you do not have permission to use this command'.format(ctx.author))
 
 
         @client.command()
