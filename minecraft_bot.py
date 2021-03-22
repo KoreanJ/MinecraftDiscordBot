@@ -93,8 +93,8 @@ def main():
         async def status(ctx):
             if sys.platform == 'linux' and int(ctx.author.id) == int(admin_userID):
                 curr_temp = ps.sensors_temperatures(fahrenheit=True)['cpu_thermal'][0][1]
-                users = [x[1] for x in ps.users()]
-                cpu_load = ps.cpu_percent(interval=1, percpu=True)
+                users = [x[0] for x in ps.users()]
+                cpu_load = ps.cpu_percent(percpu=True)
                 await ctx.send('Current Temp: ' + str(round(curr_temp,  1)) + ' °F')
                 await ctx.send('Logged in User(s): ' + str(users))
                 await ctx.send('CPU Load (%)' + str(cpu_load))
