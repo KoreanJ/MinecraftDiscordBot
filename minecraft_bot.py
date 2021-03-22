@@ -108,13 +108,14 @@ def main():
             try: 
                 item = arg
                 msg_list = get_recipe(item)
-                log_event('recipe()', '{0} requested recipe for "{1}"'.format(ctx.author, item), 'SUCCESS')
 
                 # Catch error
                 if msg_list[0] == 'ERROR':
                     log_event('recipe()', '{0}: Unable to retrieve recipe for "{1}"'.format(ctx.author, item), 'FAILURE')
                     await ctx.send(msg_list[1])
                     return
+
+                log_event('recipe()', '{0} requested recipe for "{1}"'.format(ctx.author, item), 'SUCCESS')
 
                 # Compile output into a table format
                 title = '**' + item + '**'
