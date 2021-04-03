@@ -1,7 +1,11 @@
-# MinecraftDiscordBot
-Overview: Python program running a discord bot on a Rasberry Pi 4 Model B. The bot's main purpose is to provide information for all Minecraft related things such as displaying the crafting recipe of a particular item.
+# A Minecraft Discord Bot
+This bot mainly displays the crafting recipe for Minecraft items. Please reference the usage below:
 <br>
-Usage: <br>
-- ">speak": Bot will greet the user who called the command.
-- ">recipe <item_name>": Bot will attempt to provide the Minecraft crafting recipe for this item.
-- ">shutdown": With authorized access, this command will shutdown the bot.
+General Usage: <br>
+- >speak                    MinecraftBot will speak to you!
+- >recipe "item name"       MinecraftBot will display the crafting recipe for this item. <br>
+
+Admin Usage: <br>
+- >shutdown     MinecraftBot will shutdown.
+- >status       Display the bot's current status (temp, logged in users)
+
