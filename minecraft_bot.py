@@ -8,6 +8,26 @@ from bs4 import BeautifulSoup
 from discord.ext import commands
 from datetime import datetime
 
+# Global Variables #
+RECIPE_DIR = 'recipes'
+
+def get_item_recipe(item_name):
+    path = os.path.join(RECIPE_DIR, item_name + '.json')
+    print(path)
+    if os.path.exists(path):
+        with open(path) as f:
+            d = json.load(f)
+            keys_items = [(x, d['key'][x]['item'].replace('minecraft:', '')) for x in d['key'].keys()]
+            pattern = '\n'.join([x for x in d['pattern']])
+            for key, item in keys_items:
+                pattern = pattern.replace(key, item)
+            pattern.replace(' ', 'X')
+            return pattern
+    else:
+        print('error - path does not exist')
+
+    return 'test'
+
 # Scrape requested recipe from Minecraft website
 def get_recipe(item):
     url = 'https://minecraft.gamepedia.com/' + item.lower()
@@ -68,6 +88,7 @@ def kill_process():
 
 def main():
     client = commands.Bot(command_prefix=">")
+    client.remove_command('help')
     credentials = get_bot_credentials("credentials.txt")
 
     # If bad credentials, shutdown the bot
@@ -89,7 +110,6 @@ def main():
                 log_event('shutdown()', '{0} attempted to shutdown the bot, but failed due to insufficient permissions'.format(ctx.author), 'FAILURE')
                 await ctx.send('{0}, you do not have permission to use this command'.format(ctx.author))
 
-
         @client.command()
         async def status(ctx):
             if sys.platform == 'linux' and int(ctx.author.id) == int(admin_userID):
@@ -109,30 +129,45 @@ def main():
             await ctx.send('Hello, ' + ctx.author.display_name + ', this is Minecraft Bot!')
 
         @client.command()
+        async def help(ctx):
+            await ctx.send('### How to use MinecraftBot ###\n\n>speak: MinecraftBot will say hello to you\n>status: Display MinecraftBot current temperature and logged in users (admin only)\n>recipe "item name": Prints the recipe for this item. The name must be enclosed in quotes')
+
+        @client.command()
         async def recipe(ctx, arg):
-            try: 
-                item = arg
-                msg_list = get_recipe(item)
+            item = str(arg).replace(' ', '_')
 
-                # Catch error
-                if msg_list[0] == 'ERROR':
-                    log_event('recipe()', '{0}: Unable to retrieve recipe for "{1}"'.format(ctx.author, item), 'FAILURE')
-                    await ctx.send(msg_list[1])
-                    return
-
-                log_event('recipe()', '{0} requested recipe for "{1}"'.format(ctx.author, item), 'SUCCESS')
-
-                # Compile output into a table format
-                title = '**' + item + '**'
-                e = discord.Embed(title=title, color=0x03f8fc)
-                e.add_field(name='----', value='{0}\n{1}\n{2}'.format(msg_list[0], msg_list[3], msg_list[6]))
-                e.add_field(name='----', value='{0}\n{1}\n{2}'.format(msg_list[1], msg_list[4], msg_list[7]))
-                e.add_field(name='----', value='{0}\n{1}\n{2}'.format(msg_list[2], msg_list[5], msg_list[8]))
-                await ctx.send(embed=e)
-            except Exception as ex:
-                log_event('recipe()', '{0}: Exception occurred while requesting "{1}": {2}'.format(ctx.author, item, ex), 'FAILURE')
-                await ctx.send('Unable to get recipe for the requested item "{0}": '.format(item))
+            # If perfect match found, use that item. Else compile all matching item names
+            matches = []
+            perfect_match = False
+            for fname in os.listdir(RECIPE_DIR):
+                fname_item = fname.replace('.json', '')
+                if item == fname_item:
+                    perfect_match = True
+                    matches.clear()
+                    matches.append(fname_item)
+                    break
+                elif item in fname_item:
+                    matches.append(fname_item)
+            
+            # Print status of recipe search
+            if len(matches) <= 0:
+                await ctx.send('No recipe for "{0}" was found.'.format(arg))
                 return
+            elif len(matches) == 1:
+                if perfect_match:
+                    await ctx.send('A recipe for "{0}" was found: {1}'.format(arg, matches[0]))
+
+                    # TODO: Get recipe from file #
+                    item_recipe = get_item_recipe(matches[0])
+                    await ctx.send(item_recipe)
+                else:
+                    await ctx.send('"{0}" was found as part of another recipe: {1}\n*** If this is the recipe you want, please enter: >recipe "{1}"'.format(arg, matches[0]))
+                    return
+            elif len(matches) > 1:
+                await ctx.send('More than 1 recipe was found for {0}.\n{1}\n*** Please enter the desired recipe using the command: >recipe "item name"'.format(arg, '\n'.join(matches)))
+                return
+
+            return
 
         @client.event
         async def on_message(msg):
