@@ -4,9 +4,11 @@ import os
 import json
 import sys
 import psutil as ps
+import git
 from bs4 import BeautifulSoup
 from discord.ext import commands
 from datetime import datetime
+
 
 # Global Variables #
 RECIPE_DIR = 'recipes'
@@ -168,6 +170,12 @@ def main():
                 return
 
             return
+
+        @client.command()
+        async def website_update(ctx):
+            repo_path = '~/NNWedding2022'
+            repo = git.Repo(repo_path)
+            print(repo.remotes.origin.pull())
 
         @client.event
         async def on_message(msg):
