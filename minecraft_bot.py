@@ -174,9 +174,14 @@ def main():
         @client.command()
         async def website_update(ctx):
             repo_path = '~/NNWedding2022'
-            repo = git.Repo(repo_path)
-            print(repo.remotes.origin.pull())
-
+            try:
+                repo = git.Repo(repo_path)
+                repo.remotes.origin.pull()
+                await ctx.send('Successfully pulled changes from repo located at "{0}"'.format(repo_path))
+            except Exception as ex:
+                log_event('website_update', '{0} error occurred while trying to pull git repo at "{1}"'.format(ex, repo_path), 'FAILURE')
+                return
+            
         @client.event
         async def on_message(msg):
             if msg.author == client.user:
