@@ -86,6 +86,15 @@ def log_event(method_name, event, status):
 def kill_process():
     sys.exit(0)
 
+# Check if admin
+async def is_admin(ctx, admin_id):
+    if int(ctx.author.id) == int(admin_id):
+        return True
+    
+    log_event(ctx.command.name, '{0} attempted to run {1} but failed due to insufficient permissions'.format(ctx.author, ctx.command.name), 'FAILURE')
+    await ctx.send('{0}, you do not have permission to use this command'.format(ctx.author))
+    return False
+
 ####################################################################
 
 def main():
@@ -104,17 +113,14 @@ def main():
         # DISCORD EVENTS/COMMANDS #
         @client.command()
         async def shutdown(ctx):
-            if int(ctx.author.id) == int(admin_userID):
+            if is_admin(ctx, admin_userID):
                 log_event('shutdown()', '{0} successfully shutdown the bot'.format(ctx.author), 'SUCCESS')
                 await ctx.send('MinecraftBot has been terminated')
                 await client.logout()
-            else:
-                log_event('shutdown()', '{0} attempted to shutdown the bot, but failed due to insufficient permissions'.format(ctx.author), 'FAILURE')
-                await ctx.send('{0}, you do not have permission to use this command'.format(ctx.author))
 
         @client.command()
         async def status(ctx):
-            if sys.platform == 'linux' and int(ctx.author.id) == int(admin_userID):
+            if sys.platform == 'linux' and is_admin(ctx, admin_userID):
                 log_event('status()', '{0} successfully got the bot status'.format(ctx.author), 'SUCCESS')
                 curr_temp = ps.sensors_temperatures(fahrenheit=True)['cpu_thermal'][0][1]
                 users = [x[0] for x in ps.users()]
@@ -122,9 +128,6 @@ def main():
                 await ctx.send('Current Temp: ' + str(round(curr_temp,  1)) + ' °F')
                 await ctx.send('Logged in User(s): ' + str(users))
                 await ctx.send('CPU Load (%)' + str(cpu_load))
-            else:
-                log_event('status()', '{0} attempted to get bot status, but failed due to insufficient permissions'.format(ctx.author), 'FAILURE')
-                await ctx.send('{0}, you do not have permission to use this command'.format(ctx.author))
 
         @client.command()
         async def speak(ctx):
@@ -132,7 +135,7 @@ def main():
 
         @client.command()
         async def help(ctx):
-            await ctx.send('### How to use MinecraftBot ###\n\n>speak: MinecraftBot will say hello to you\n>status: Display MinecraftBot current temperature and logged in users (admin only)\n>recipe "item name": Prints the recipe for this item. The name must be enclosed in quotes')
+            await ctx.send('### How to use MinecraftBot ###\n\n>speak: MinecraftBot will say hello to you\n>status: Display MinecraftBot current temperature and logged in users (admin only)\n>recipe "item name": Prints the recipe for this item. The name must be enclosed in quotes\n>shutdown: Shutsdown the bot (admin only)')
 
         @client.command()
         async def recipe(ctx, arg):
@@ -173,30 +176,32 @@ def main():
 
         @client.command()
         async def website_update(ctx):
-            repo_path = '~/NNWedding2022'
-            try:
-                repo = git.Repo(repo_path)
-                pull_info = repo.remotes.origin.pull()
-                await ctx.send('Successfully pulled changes from repo located at "{0}"'.format(repo_path))
-            except Exception as ex:
-                log_event('website_update', '{0} error occurred while trying to pull git repo at "{1}"'.format(ex, repo_path), 'FAILURE')
-                return
+            if sys.platform == 'linux' and is_admin(ctx, admin_userID):
+                repo_path = '~/NNWedding2022'
+                try:
+                    repo = git.Repo(repo_path)
+                    pull_info = repo.remotes.origin.pull()
+                    await ctx.send('Successfully pulled changes from repo located at "{0}"'.format(repo_path))
+                except Exception as ex:
+                    log_event('website_update', '{0} error occurred while trying to pull git repo at "{1}"'.format(ex, repo_path), 'FAILURE')
+                    return
 
         @client.command()
-        async def website_log(ctx):
-            log_path = '/var/log/nginx/access.log'
-            if os.path.exists(log_path):
-                with open(log_path) as file:
-                    max_line_cnt = 5
-                    idx = 1
-                    out = ''
-                    for line in file.readlines():
-                        if idx > 5:
-                            await ctx.send(out)
-                            await ctx.send('>>> End of log. Printed {0} lines. <<<'.format(max_line_cnt))
-                            break
-                        out += line + '\n'
-                        idx += 1
+        async def website_log(ctx, arg):
+            if sys.platform == 'linux' and is_admin(ctx, admin_userID):
+                log_path = '/var/log/nginx/access.log'
+                if os.path.exists(log_path):
+                    with open(log_path) as file:
+                        max_line_cnt = int(arg)
+                        idx = 1
+                        out = ''
+                        for line in file.readlines():
+                            if idx > 5:
+                                await ctx.send(out)
+                                await ctx.send('[ End of log. Printed {0} lines. ]'.format(max_line_cnt))
+                                break
+                            out += line + '\n'
+                            idx += 1
             
         @client.event
         async def on_message(msg):
