@@ -176,11 +176,27 @@ def main():
             repo_path = '~/NNWedding2022'
             try:
                 repo = git.Repo(repo_path)
-                repo.remotes.origin.pull()
+                pull_info = repo.remotes.origin.pull()
                 await ctx.send('Successfully pulled changes from repo located at "{0}"'.format(repo_path))
             except Exception as ex:
                 log_event('website_update', '{0} error occurred while trying to pull git repo at "{1}"'.format(ex, repo_path), 'FAILURE')
                 return
+
+        @client.command()
+        async def website_log(ctx):
+            log_path = '/var/log/nginx/access.log'
+            if os.path.exists(log_path):
+                with open(log_path) as file:
+                    max_line_cnt = 5
+                    idx = 1
+                    out = ''
+                    for line in file.readlines():
+                        if idx > 5:
+                            await ctx.send(out)
+                            await ctx.send('>>> End of log. Printed {0} lines. <<<'.format(max_line_cnt))
+                            break
+                        out += line + '\n'
+                        idx += 1
             
         @client.event
         async def on_message(msg):
