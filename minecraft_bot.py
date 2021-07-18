@@ -135,7 +135,7 @@ def main():
 
         @client.command()
         async def help(ctx):
-            await ctx.send('### How to use MinecraftBot ###\n\n>speak: MinecraftBot will say hello to you\n>status: Display MinecraftBot current temperature and logged in users (admin only)\n>recipe "item name": Prints the recipe for this item. The name must be enclosed in quotes\n>shutdown: Shutsdown the bot (admin only)')
+            await ctx.send('### How to use MinecraftBot ###\n\n>speak: MinecraftBot will say hello to you\n>status: Display MinecraftBot current temperature and logged in users (admin only)\n>recipe "item name": Prints the recipe for this item. The name must be enclosed in quotes\n>shutdown: Terminates the bot (admin only)')
 
         @client.command()
         async def recipe(ctx, arg):
@@ -196,7 +196,7 @@ def main():
                         idx = 1
                         out = ''
                         for line in file.readlines():
-                            if idx > 5:
+                            if idx > max_line_cnt:
                                 await ctx.send(out)
                                 await ctx.send('[ End of log. Printed {0} lines. ]'.format(max_line_cnt))
                                 break
