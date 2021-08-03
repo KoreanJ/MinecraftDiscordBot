@@ -58,12 +58,13 @@ def get_recipe(item):
 
 # Retrieve credentials for bot token and allowed admin userID
 def get_bot_credentials(fname):
-    if not os.path.exists(fname):
-        print(fname + " does not exist")
+    path = "~/MinecraftDiscordBot/" + fname
+    if not os.path.exists(path):
+        print(path + " does not exist")
         return None
     else:
         try:    
-            with open(fname) as f:
+            with open(path) as f:
                 credentials = json.load(f)
                 return credentials
         except Exception as ex:
