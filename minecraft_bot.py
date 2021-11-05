@@ -99,7 +99,7 @@ async def is_admin(ctx, admin_id):
 ####################################################################
 
 def main():
-    client = commands.Bot(command_prefix=">")
+    client = commands.Bot(command_prefix="%")
     client.remove_command('help')
     credentials = get_bot_credentials("credentials.txt")
 
