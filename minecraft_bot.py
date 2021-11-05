@@ -8,6 +8,7 @@ import git
 from bs4 import BeautifulSoup
 from discord.ext import commands
 from datetime import datetime
+from os.path import abspath
 
 
 # Global Variables #
@@ -58,7 +59,7 @@ def get_recipe(item):
 
 # Retrieve credentials for bot token and allowed admin userID
 def get_bot_credentials(fname):
-    path = "~/MinecraftDiscordBot/" + fname
+    path = os.path.join(abspath("~"), "MinecraftDiscordBot", fname)
     if not os.path.exists(path):
         print(path + " does not exist")
         return None
