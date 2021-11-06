@@ -115,14 +115,14 @@ def main():
         # DISCORD EVENTS/COMMANDS #
         @client.command()
         async def shutdown(ctx):
-            if is_admin(ctx, admin_userID):
+            if await is_admin(ctx, admin_userID):
                 log_event('shutdown()', '{0} successfully shutdown the bot'.format(ctx.author), 'SUCCESS')
                 await ctx.send('MinecraftBot has been terminated')
                 await client.logout()
 
         @client.command()
         async def status(ctx):
-            if sys.platform == 'linux' and is_admin(ctx, admin_userID):
+            if sys.platform == 'linux' and await is_admin(ctx, admin_userID):
                 log_event('status()', '{0} successfully got the bot status'.format(ctx.author), 'SUCCESS')
                 curr_temp = ps.sensors_temperatures(fahrenheit=True)['cpu_thermal'][0][1]
                 users = [x[0] for x in ps.users()]
@@ -178,7 +178,7 @@ def main():
 
         @client.command()
         async def website_update(ctx):
-            if sys.platform == 'linux' and is_admin(ctx, admin_userID):
+            if sys.platform == 'linux' and await is_admin(ctx, admin_userID):
                 await ctx.send('Pulling changes from linked repository...')
                 repo_path = '~/NNWedding2022'
                 try:
@@ -192,7 +192,7 @@ def main():
 
         @client.command()
         async def website_log(ctx, arg):
-            if sys.platform == 'linux' and is_admin(ctx, admin_userID):
+            if sys.platform == 'linux' and await is_admin(ctx, admin_userID):
                 log_path = '/var/log/nginx/access.log'
                 if os.path.exists(log_path):
                     with open(log_path) as file:
