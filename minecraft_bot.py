@@ -179,12 +179,14 @@ def main():
         @client.command()
         async def website_update(ctx):
             if sys.platform == 'linux' and is_admin(ctx, admin_userID):
+                await ctx.send('Pulling changes from linked repository...')
                 repo_path = '~/NNWedding2022'
                 try:
                     repo = git.Repo(repo_path)
                     pull_info = repo.remotes.origin.pull()
-                    await ctx.send('Successfully pulled changes from repo located at "{0}"'.format(repo_path))
+                    await ctx.send('Successfully updated local repository!')
                 except Exception as ex:
+                    await ctx.send('Failed to update local repository. Error {0}'.format(ex))
                     log_event('website_update', '{0} error occurred while trying to pull git repo at "{1}"'.format(ex, repo_path), 'FAILURE')
                     return
 
