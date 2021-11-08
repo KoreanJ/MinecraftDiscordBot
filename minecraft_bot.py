@@ -117,7 +117,7 @@ def main():
         async def shutdown(ctx):
             if await is_admin(ctx, admin_userID):
                 log_event('shutdown()', '{0} successfully shutdown the bot'.format(ctx.author), 'SUCCESS')
-                await ctx.send('MinecraftBot has been terminated')
+                await ctx.send('MinecraftBot has gone to bed \U0001f614')
                 await client.logout()
 
         @client.command()
@@ -211,10 +211,18 @@ def main():
         async def on_message(msg):
             if msg.author == client.user:
                 return
+            
+
             await client.process_commands(msg)
 
         @client.event
         async def on_ready():
+
+            # Send ready status to commands channel
+            cmd_ch = [ch for ch in client.get_all_channels() if ch.name.lower() == 'commands']
+            if len(cmd_ch) > 0:
+                await cmd_ch[0].send("MinecraftBot is awake \U0001f600")
+
             log_event('main()', '{0} has successfully been initialized'.format(client.user), 'SUCCESS')
             
         
