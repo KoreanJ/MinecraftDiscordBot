@@ -132,7 +132,7 @@ def main():
                 users = [x[0] for x in ps.users()]
                 cpu_load = ps.cpu_percent(percpu=True)
                 uptime_full = subprocess.check_output('uptime').decode('ASCII')
-                uptime_days = uptime_full[uptime_full.index('up') + 3, uptime_full.index(',')]
+                uptime_days = uptime_full[uptime_full.index('up') + 3: uptime_full.index(',')]
 
                 await ctx.send('Temperature: [{0} °F ({2} °F), {1} °C ({3} °C)]\nLogged in User(s): {4}\nCPU Load (%): {5}\nUptime: {6}'\
                     .format(temp_F, temp_C, MAX_TEMP_F, MAX_TEMP_C, str(users), str(cpu_load), uptime_days))
