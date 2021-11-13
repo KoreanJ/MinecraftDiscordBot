@@ -6,6 +6,8 @@ import sys
 import psutil as ps
 import git
 import subprocess
+from io import BytesIO
+from PIL import Image
 from bs4 import BeautifulSoup
 from discord.ext import commands
 from datetime import datetime
@@ -213,6 +215,14 @@ def main():
                             out += line + '\n'
                             idx += 1
             
+        @client.command()
+        async def random_picture(ctx, arg):
+            img = Image.open('F-22.jpg')
+            with BytesIO() as img_bin:
+                img.save(img_bin, 'jpg')
+                img_bin.seek(0)
+                await ctx.send(file=discord.File(fp=img_bin, filename='test.jpg'))
+
         @client.event
         async def on_message(msg):
             if msg.author == client.user:
