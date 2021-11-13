@@ -216,10 +216,10 @@ def main():
                             idx += 1
             
         @client.command()
-        async def random_picture(ctx, arg):
+        async def random_picture(ctx):
             img = Image.open('F-22.jpg')
             with BytesIO() as img_bin:
-                img.save(img_bin, 'jpg')
+                img.save(img_bin, 'JPEG')
                 img_bin.seek(0)
                 await ctx.send(file=discord.File(fp=img_bin, filename='test.jpg'))
 
