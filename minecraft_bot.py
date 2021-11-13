@@ -5,6 +5,7 @@ import json
 import sys
 import psutil as ps
 import git
+import subprocess
 from bs4 import BeautifulSoup
 from discord.ext import commands
 from datetime import datetime
@@ -130,8 +131,11 @@ def main():
                 temp_C = str(round(ps.sensors_temperatures()['cpu_thermal'][0][1], 1))
                 users = [x[0] for x in ps.users()]
                 cpu_load = ps.cpu_percent(percpu=True)
-                await ctx.send('Temperature: [{0} °F ({2} °F), {1} °C ({3} °C)]\nLogged in User(s): {4}\nCPU Load (%): {5}'\
-                    .format(temp_F, temp_C, MAX_TEMP_F, MAX_TEMP_C, str(users), str(cpu_load)))
+                uptime_full = subprocess.check_output('uptime').decode('ASCII')
+                uptime_days = uptime_full[uptime_full.index('up') + 3, uptime_full.index(',')]
+
+                await ctx.send('Temperature: [{0} °F ({2} °F), {1} °C ({3} °C)]\nLogged in User(s): {4}\nCPU Load (%): {5}\nUptime: {6}'\
+                    .format(temp_F, temp_C, MAX_TEMP_F, MAX_TEMP_C, str(users), str(cpu_load), uptime_days))
 
         @client.command()
         async def speak(ctx):
