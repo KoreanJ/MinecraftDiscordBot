@@ -13,6 +13,8 @@ from os.path import abspath
 
 # Global Variables #
 RECIPE_DIR = 'recipes'
+MAX_TEMP_C = 80
+MAX_TEMP_F = 176
 
 def get_item_recipe(item_name):
     path = os.path.join(RECIPE_DIR, item_name + '.json')
@@ -124,12 +126,12 @@ def main():
         async def status(ctx):
             if sys.platform == 'linux' and await is_admin(ctx, admin_userID):
                 log_event('status()', '{0} successfully got the bot status'.format(ctx.author), 'SUCCESS')
-                curr_temp = ps.sensors_temperatures(fahrenheit=True)['cpu_thermal'][0][1]
+                temp_F = str(round(ps.sensors_temperatures(fahrenheit=True)['cpu_thermal'][0][1], 1))
+                temp_C = str(round(ps.sensors_temperatures()['cpu_thermal'][0][1], 1))
                 users = [x[0] for x in ps.users()]
                 cpu_load = ps.cpu_percent(percpu=True)
-                await ctx.send('Current Temp: ' + str(round(curr_temp,  1)) + ' °F')
-                await ctx.send('Logged in User(s): ' + str(users))
-                await ctx.send('CPU Load (%)' + str(cpu_load))
+                await ctx.send('Temperature: [{0} °F ({2} °F), {1} °C ({3} °C)]\nLogged in User(s): {4}\nCPU Load (%): {5}'\
+                    .format(temp_F, temp_C, MAX_TEMP_F, MAX_TEMP_C, str(users), str(cpu_load)))
 
         @client.command()
         async def speak(ctx):
