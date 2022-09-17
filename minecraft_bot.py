@@ -1,4 +1,5 @@
 import discord
+import asyncio
 import requests as r
 import os
 import json
@@ -105,7 +106,10 @@ async def is_admin(ctx, admin_id):
 ####################################################################
 
 def main():
-    client = commands.Bot(command_prefix="%")
+    intents = discord.Intents.default()
+    intents.messages = True
+    intents.message_content = True
+    client = commands.Bot(command_prefix="%", intents=intents)
     client.remove_command('help')
     credentials = get_bot_credentials("credentials.txt")
 
@@ -243,8 +247,11 @@ def main():
             
         
         # Start the bot
-        client.loop.run_until_complete(client.start(token))
-    
+        # loop = asyncio.get_event_loop()
+        # loop.run_until_complete(client.start(token))
+        client.run(token)
+
+
 if __name__ == "__main__":
     main()
 
